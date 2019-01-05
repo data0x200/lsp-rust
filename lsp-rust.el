@@ -166,9 +166,14 @@ The explaination comes from 'rustc --explain=ID'."
       lsp-rust--handlers)
   (lsp-provide-marked-string-renderer client "rust" #'lsp-rust--render-string))
 
-(lsp-define-stdio-client lsp-rust "rust" #'lsp-rust--get-root nil
-             :command-fn #'lsp-rust--rls-command
-             :initialize #'lsp-rust--initialize-client)
+(lsp-register-client
+ (make-lsp-client :new-connection (lsp-stdio-connection lsp-rust-rls-command)
+                  :major-modes '(rust-mode)
+                  :server-id 'rls
+                  :notification-handlers (lsp-ht ("window/progress" 'lsp-clients--rust-window-progress))
+                  :initialized-fn 'lsp-rust--initialize-client))
+(defun lsp-rust-enable ()
+  (lsp))
 
 (defun lsp-rust--set-configuration ()
   (lsp--set-configuration `(:rust ,lsp-rust--config-options)))
